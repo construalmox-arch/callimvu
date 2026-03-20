@@ -2,15 +2,16 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SQUAD OPS | PROTOCOLO IMVU</title>
+    <title>SQUAD OPS | HUB MOURA</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://meet.jit.si/external_api.js"></script>
     <style>
         :root {
             --neon-blue: #00f3ff;
             --neon-pink: #ff00ff;
+            --neon-purple: #9d00ff;
             --tetris-green: #39ff14;
-            --bg: #050505;
+            --bg: #010103;
         }
 
         body {
@@ -21,45 +22,73 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            border: 4px solid var(--neon-blue);
-            box-shadow: inset 0 0 20px var(--neon-blue);
+            overflow: hidden;
+            border: 5px solid var(--neon-blue);
+            box-shadow: inset 0 0 50px rgba(0, 243, 255, 0.2);
         }
 
-        /* TELA DE REGRAS (LOBBY) */
+        /* EMOJIS FLUTUANTES DINÂMICOS */
+        .floating-emojis {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 28px;
+            opacity: 0.3;
+            filter: drop-shadow(0 0 5px white);
+            animation: float 12s infinite linear;
+        }
+
+        @keyframes float {
+            from { transform: translateY(110vh) rotate(0deg) scale(0.8); }
+            to { transform: translateY(-15vh) rotate(360deg) scale(1.2); }
+        }
+
+        /* LOBBY / REGRAS */
         #lobby {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: radial-gradient(circle, #0a0a0f 0%, #000 100%);
             z-index: 999;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 20px;
         }
 
         .rules-box {
-            border: 3px solid var(--neon-pink);
-            background: #111;
-            padding: 30px;
-            max-width: 600px;
-            box-shadow: 10px 10px 0px var(--neon-pink);
+            border: 4px solid var(--neon-pink);
+            background: rgba(5, 5, 10, 0.98);
+            padding: 50px;
+            max-width: 650px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.5);
+            position: relative;
         }
 
-        .rules-box h2 { color: var(--neon-pink); font-size: 1.2rem; margin-bottom: 20px; }
-        .rules-list { text-align: left; font-size: 0.7rem; line-height: 1.8; margin-bottom: 20px; color: var(--neon-blue); }
-
-        .checkbox-container { font-size: 0.6rem; margin-bottom: 20px; cursor: pointer; }
+        .rules-box h2 { 
+            color: var(--neon-pink); 
+            font-size: 1.5rem; 
+            margin-bottom: 30px; 
+            text-shadow: 0 0 15px var(--neon-pink);
+            letter-spacing: 2px;
+        }
+        
+        .rules-list { text-align: left; font-size: 0.8rem; line-height: 2.2; margin-bottom: 35px; color: #e0e0e0; }
+        .rules-list p { border-left: 3px solid var(--neon-blue); padding-left: 15px; margin: 10px 0; }
 
         .btn-start {
-            padding: 20px;
-            background: #333;
-            color: #666;
-            border: 3px solid #666;
+            padding: 25px 50px;
+            background: #1a1a1a;
+            color: #444;
+            border: 4px solid #333;
             font-family: 'Press Start 2P';
+            font-size: 0.9rem;
             cursor: not-allowed;
-            transition: 0.3s;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .btn-start.active {
@@ -67,106 +96,184 @@
             color: #000;
             border-color: #fff;
             cursor: pointer;
-            box-shadow: 0 0 20px var(--tetris-green);
+            box-shadow: 0 0 40px var(--tetris-green);
+            transform: scale(1.05);
         }
 
-        /* HEADER E HUD */
+        /* HEADER HUD */
         header {
-            background: #111;
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
             border-bottom: 3px solid var(--neon-blue);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
         }
 
-        .glitch-text {
-            font-size: 0.8rem;
-            animation: glitch 2s infinite;
+        .moura-tag {
+            color: var(--neon-pink);
+            font-size: 0.9rem;
+            text-shadow: 0 0 10px var(--neon-pink);
+            animation: pulse 2s infinite;
         }
 
-        #meet-container { flex-grow: 1; background: #000; }
-
-        /* ANIMAÇÕES */
-        @keyframes glitch {
-            0% { text-shadow: 2px 2px var(--neon-pink); }
-            50% { text-shadow: -2px -2px var(--neon-blue); }
-            100% { text-shadow: 2px 2px var(--neon-pink); }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
         }
 
-        .scanline {
-            width: 100%; height: 2px; background: rgba(0, 243, 255, 0.1);
-            position: absolute; top: 0; animation: scan 4s linear infinite;
+        /* PAINEL DE GAMES */
+        #game-panel {
+            position: fixed;
+            right: -340px;
+            top: 120px;
+            width: 320px;
+            background: rgba(5, 5, 15, 0.95);
+            border: 3px solid var(--neon-purple);
+            padding: 20px;
+            transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 100;
+            box-shadow: -10px 0 30px rgba(157, 0, 255, 0.4);
         }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        #game-panel.open { right: 0; }
+
+        .toggle-games {
+            position: absolute;
+            left: -60px;
+            top: -3px;
+            background: var(--neon-purple);
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            border: 3px solid var(--neon-purple);
+            color: white;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -5px 0 10px rgba(157, 0, 255, 0.5);
+        }
+
+        .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
+        .cell { 
+            width: 90px; height: 90px; background: #0a0a0a; border: 2px solid #222; 
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer;
+            transition: 0.2s;
+        }
+        .cell:hover { background: #151515; border-color: var(--neon-blue); }
+
+        #meet-container { flex-grow: 1; z-index: 5; background: #000; }
     </style>
 </head>
 <body>
 
-<div class="scanline"></div>
+<div class="floating-emojis" id="emoji-container"></div>
 
 <div id="lobby">
     <div class="rules-box">
-        <h2>[ REGRAS DO ESQUADRÃO ]</h2>
+        <h2>⚡ SQUAD INTERFACE ⚡</h2>
         <div class="rules-list">
-            <p>> 01. RESPEITO OBRIGATÓRIO EM CALL.</p>
-            <p>> 02. SEM FLOOD DE ÁUDIO OU GRITOS.</p>
-            <p>> 03. PROIBIDO DIVULGAR LINKS EXTERNOS.</p>
-            <p>> 04. O MODERADOR TEM PODER DE KICK/MUTE.</p>
+            <p>> PROTOCOLO 01: RESPEITO TOTAL NA VOZ.</p>
+            <p>> PROTOCOLO 02: SEM RUÍDOS OU FLOOD.</p>
+            <p>> PROTOCOLO 03: SIGA AS ORDENS DO ADMIN.</p>
+            <p>> OPERADOR DO SISTEMA: MOURA.</p>
         </div>
         
-        <label class="checkbox-container">
-            <input type="checkbox" id="agree-check" onclick="toggleButton()"> EU ACEITO AS DIRETRIZES
+        <label style="font-size: 0.7rem; cursor: pointer; color: var(--neon-blue);">
+            <input type="checkbox" id="agree-check" onclick="toggleButton()"> ACEITAR DIRETRIZES
         </label>
-        <br>
-        <button id="start-btn" class="btn-start" onclick="joinCall()" disabled>CONECTAR AGORA</button>
+        <br><br>
+        <button id="start-btn" class="btn-start" onclick="joinCall()" disabled>INICIAR CONEXÃO</button>
     </div>
 </div>
 
 <header>
-    <div class="glitch-text">SISTEMA: ONLINE</div>
-    <div style="font-size: 0.6rem; color: var(--neon-pink);">PLAYER: JESSÉ (ADMIN)</div>
+    <div style="color: var(--neon-blue); font-size: 0.8rem;">STATUS: ENCRYPTED</div>
+    <div class="moura-tag">OPERADOR: MOURA</div>
 </header>
 
 <div id="meet-container"></div>
 
+<div id="game-panel">
+    <button class="toggle-games" onclick="togglePanel()">🎮</button>
+    <div style="font-size: 0.7rem; color: var(--neon-purple); text-align: center;">MINI-GAME: VELHA</div>
+    <div class="ttt-grid" id="board">
+        <div class="cell" onclick="makeMove(0)"></div>
+        <div class="cell" onclick="makeMove(1)"></div>
+        <div class="cell" onclick="makeMove(2)"></div>
+        <div class="cell" onclick="makeMove(3)"></div>
+        <div class="cell" onclick="makeMove(4)"></div>
+        <div class="cell" onclick="makeMove(5)"></div>
+        <div class="cell" onclick="makeMove(6)"></div>
+        <div class="cell" onclick="makeMove(7)"></div>
+        <div class="cell" onclick="makeMove(8)"></div>
+    </div>
+    <button onclick="resetGame()" style="width: 100%; margin-top: 15px; font-family:'Press Start 2P'; font-size: 0.5rem; padding: 12px; cursor:pointer; background: #000; color: #fff; border: 1px solid #fff;">RESET</button>
+</div>
+
 <script>
+    // Emojis coloridos flutuando
+    const emojis = ['🎮', '⚡', '👾', '💎', '🔥', '💻', '💀', '👽', '🚀'];
+    const colors = ['#00f3ff', '#ff00ff', '#39ff14', '#9d00ff', '#ffff00'];
+    const container = document.getElementById('emoji-container');
+    
+    for (let i = 0; i < 20; i++) {
+        const div = document.createElement('div');
+        div.className = 'emoji';
+        div.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        div.style.left = Math.random() * 100 + 'vw';
+        div.style.color = colors[Math.floor(Math.random() * colors.length)];
+        div.style.animationDuration = (Math.random() * 8 + 8) + 's';
+        div.style.animationDelay = (Math.random() * 5) + 's';
+        container.appendChild(div);
+    }
+
     function toggleButton() {
         const check = document.getElementById('agree-check');
         const btn = document.getElementById('start-btn');
-        if(check.checked) {
-            btn.disabled = false;
-            btn.classList.add('active');
-        } else {
-            btn.disabled = true;
-            btn.classList.remove('active');
-        }
+        btn.disabled = !check.checked;
+        check.checked ? btn.classList.add('active') : btn.classList.remove('active');
+    }
+
+    function togglePanel() {
+        document.getElementById('game-panel').classList.toggle('open');
     }
 
     function joinCall() {
         document.getElementById('lobby').style.display = 'none';
-        
         const domain = "meet.jit.si";
         const options = {
-            roomName: "SQUAD_IMVU_2026_PRIVATE",
+            roomName: "SQUAD_MOURA_PRIVATE_2026",
             width: "100%",
             height: "100%",
             parentNode: document.querySelector('#meet-container'),
-            lang: 'pt-br',
-            interfaceConfigOverwrite: {
-                TOOLBAR_BUTTONS: ['microphone', 'camera', 'chat', 'hangup', 'tileview', 'settings'],
-                MAIN_TOOLBAR_BUTTONS: ['microphone', 'camera', 'chat'],
-                SHOW_JITSI_WATERMARK: false
-            },
-            configOverwrite: {
-                startWithAudioMuted: false,
-                disableDeepLinking: true
-            }
+            configOverwrite: { startWithAudioMuted: false }
         };
-        const api = new JitsiMeetExternalAPI(domain, options);
-        
-        // Notificação de entrada
-        api.executeCommand('displayName', 'Recruta do IMVU');
+        new JitsiMeetExternalAPI(domain, options);
+    }
+
+    let currentPlayer = "X";
+    let cells = ["","","","","","","","",""];
+    function makeMove(i) {
+        if (cells[i] === "") {
+            cells[i] = currentPlayer;
+            const c = document.querySelectorAll('.cell')[i];
+            c.innerText = currentPlayer;
+            c.style.color = currentPlayer === "X" ? "var(--neon-blue)" : "var(--neon-pink)";
+            c.style.textShadow = `0 0 10px ${c.style.color}`;
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+        }
+    }
+    function resetGame() {
+        cells = ["","","","","","","","",""];
+        document.querySelectorAll('.cell').forEach(c => {
+            c.innerText = "";
+            c.style.textShadow = "none";
+        });
+        currentPlayer = "X";
     }
 </script>
 
